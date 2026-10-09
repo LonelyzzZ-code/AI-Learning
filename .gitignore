@@ -1,5 +1,7 @@
 ._*
 *.md
 !README.md
-/.mimosa
-/.zcodeignore
+.mimosa/
+.zcodeignore
+__pycache__/
+.vscode/

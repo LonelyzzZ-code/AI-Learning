@@ -20,7 +20,7 @@ def ai_chat(data: ChatIn):
     def gen(): #生成器:被StreamingResponse按需拉取
         stream = client.chat.completions.create(
             model = "glm-4-flash",
-            message = [{"role": "user","content": data.question}],
+            messages = [{"role": "user","content": data.question}],
             stream = True,
         )
         for chunk in stream:

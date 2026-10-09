@@ -1,0 +1,23 @@
+{
+  "model": "glm-4-flash",
+  "messages": [
+    {
+      "role": "user",
+      "content": "深圳今天天气怎么样？"
+    }
+  ],
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "get_weather",
+        "description": "查询指定城市的实时天气",
+        "parameters": {
+          "type": "object",
+          "properties": { "city": { "type": "string" } },
+          "required": ["city"]
+        }
+      }
+    }
+  ]
+}

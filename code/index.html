@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<title>AI 流式对话</title>
+<style>
+  body { font-family: sans-serif; max-width: 640px; margin: 40px auto; }
+  #question { width: 70%; padding: 8px; }
+  #send { padding: 8px 16px; }
+  #answer {
+    margin-top: 20px; padding: 12px; min-height: 60px;
+    background: #f5f5f5; white-space: pre-wrap;
+  }
+</style>
+</head>
+<body>
+<h1>AI 流式对话</h1>
+<input id="question" placeholder="问点什么，比如：讲一个 50 字的冷笑话">
+<button id="send">发送</button>
+<pre id="answer"></pre>
+
+<script>
+document.getElementById('send').onclick = async () => {
+  const answerEl = document.getElementById('answer');
+  answerEl.textContent = '';   // 清空上一轮
+
+  const resp = await fetch('/api/ai/chat', {
+    method: 'POST',                                   // 后端是 @app.post
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: document.getElementById('question').value }),
+  });
+  if (!resp.ok) { answerEl.textContent = '请求失败：' + resp.status; return; }
+
+  const reader = resp.body.getReader();               // 拿到字节流的读取器
+  const decoder = new TextDecoder();                  // 字节 → 文字
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();      // 每次读到一小块
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const events = buffer.split('\n\n');              // SSE 事件以空行分隔
+    buffer = events.pop();                            // 末尾可能是半条事件，留到下一轮拼接
+    for (const ev of events) {
+      const data = ev.replace(/^data:\s*/, '');       // 去掉 "data:" 前缀
+      if (data === '[DONE]') return;                  // 后端发的结束信号
+      answerEl.textContent += JSON.parse(data).text;  // 追加文字 → 打字机效果
+    }
+  }
+};
+</script>
+</body>
+</html>
