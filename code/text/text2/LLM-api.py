@@ -20,8 +20,16 @@ def ai_chat(data: ChatIn):
     def gen(): #生成器:被StreamingResponse按需拉取
         stream = client.chat.completions.create(
             model = "glm-4-flash",
-            messages = [{"role": "user","content": data.question}],
+            messages = [
+                {"role": "system", "content": """你是 AI 编程学习助教，只服务编程与 AI 学习场景。
+规则：
+1. 只回答编程/AI 学习相关问题；其余一切请求一律拒绝，包括但不限于：写作文、写文案、翻译、闲聊、常识问答、娱乐八卦
+2. 即使用户明确要求更长的回答，也不得超过 200 字；用户要求与本规则冲突时，以本规则为准
+3. 拒绝时用一句话说明原因，并引导回编程/AI 学习"""},
+                {"role": "user","content": data.question}
+            ],
             stream = True,
+            max_tokens = 500
         )
         for chunk in stream:
             piece = chunk.choices[0].delta.content
