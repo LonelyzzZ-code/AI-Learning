@@ -2,6 +2,7 @@
 *.md
 !README.md
 !notes/**
+!File/**
 ._*
 .mimosa/
 .zcodeignore

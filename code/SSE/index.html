@@ -20,14 +20,19 @@
 <pre id="answer"></pre>
 
 <script>
+let controller = null;                                // 当前这条流；新请求发出前先掐掉它
 document.getElementById('send').onclick = async () => {
+  if (controller) controller.abort();                 // 防重入：上一条没读完就断开，避免双流交错乱码
+  controller = new AbortController();
   const answerEl = document.getElementById('answer');
   answerEl.textContent = '';   // 清空上一轮
 
+  try {
   const resp = await fetch('/api/ai/chat', {
     method: 'POST',                                   // 后端是 @app.post
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ question: document.getElementById('question').value }),
+    signal: controller.signal,                        // 绑定：abort() 时这条 fetch 一起断
   });
   if (!resp.ok) { answerEl.textContent = '请求失败：' + resp.status; return; }
 
@@ -47,6 +52,9 @@ document.getElementById('send').onclick = async () => {
       if (data === '[DONE]') return;                  // 后端发的结束信号
       answerEl.textContent += JSON.parse(data).text;  // 追加文字 → 打字机效果
     }
+  }
+  } catch (e) {
+    if (e.name !== 'AbortError') throw e;             // 只有被新请求掐掉的旧流才静默退出
   }
 };
 </script>

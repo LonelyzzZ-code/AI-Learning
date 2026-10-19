@@ -2,6 +2,8 @@ import json
 import os
 from openai import OpenAI
 
+from prompts import SUMMARIZE_USER_V1
+
 client = OpenAI(
     api_key = os.environ["ZHIPU_API_KEY"],
     base_url = "https://open.bigmodel.cn/api/paas/v4/"
@@ -16,7 +18,7 @@ for m in [0.1,0.9]:
             model = "glm-4-flash",
             messages = [
                 {"role": "system", "content": content},
-                {"role": "user", "content": "请用一句话总结这篇文章"}
+                {"role": "user", "content": SUMMARIZE_USER_V1}
             ],
             temperature = m
         )

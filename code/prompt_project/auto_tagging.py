@@ -3,13 +3,15 @@ from pathlib import Path
 from openai import OpenAI
 import json
 
+from prompts import TAGGING_SYSTEM_V1, TAGGING_RETRY_V1
+
 client = OpenAI(
     api_key = os.environ["ZHIPU_API_KEY"],
     base_url = "https://open.bigmodel.cn/api/paas/v4/"
 )
 
 Files = ["File/01-LLM-API三件套.md", "File/02-Prompt工程.md"]
-system_messages = [{"role": "system", "content": "你是文章分析器。只输出 JSON，格式 {title, tags, summary}，不要其他文字"}]
+system_messages = [{"role": "system", "content": TAGGING_SYSTEM_V1}]
 results = {}
 
 for path in Files:
@@ -27,7 +29,7 @@ for path in Files:
     except json.JSONDecodeError:
         base_messages = base_messages + [
             {"role": "assistant", "content": resp},
-            {"role": "user", "content": "上面的输出不是合法JSON，请严格只输出JSON"}
+            {"role": "user", "content": TAGGING_RETRY_V1}
         ]
         resp1 = client.chat.completions.create(
             model = "glm-4-flash",
@@ -40,6 +42,6 @@ for path in Files:
         "tags": data.get("tags", []),
         "summary": data.get("summary", "")
     }
-out_path = Path(__file__).resolve().parent / "text" / "text3.json"
+out_path = Path(__file__).resolve().parent / "text3.json"
 out_path.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
 print("写入完毕！")

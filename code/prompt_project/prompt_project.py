@@ -6,7 +6,7 @@ client = OpenAI(
     base_url = "https://open.bigmodel.cn/api/paas/v4/"
 )
 
-from prompts import REWRITE_MESSAGES_V1
+from prompts import REWRITE_MESSAGES_V5
 
 question = ["那个讲数据库索引的笔记是哪篇",
             "咋用redis加速",
@@ -17,7 +17,7 @@ question = ["那个讲数据库索引的笔记是哪篇",
 def rewrite(question: str) -> str:
     response = client.chat.completions.create(
         model = "glm-4-flash",
-        messages = REWRITE_MESSAGES_V1 + [{"role": "user", "content": question}],
+        messages = REWRITE_MESSAGES_V5 + [{"role": "user", "content": question}],
         temperature = 0.1,
         max_tokens = 32 
     )
